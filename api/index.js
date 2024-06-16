@@ -2,10 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const User = require("./models/User");
+const Post = require("./models/Post");
 const app = express();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
+const multer = require("multer");
+const uploadMiddleware = multer({ dest: "uploads/" });
+const fs = require("fs");
 
 const salt = bcrypt.genSaltSync(10);
 const secret = "sfaVJVJHvbkhjhjkhv";
@@ -41,7 +45,10 @@ app.post("/login", async (req, res) => {
       //Logged in
       jwt.sign({ username, id: userDoc._id }, secret, {}, (error, token) => {
         if (error) throw error;
-        res.cookie("token", token).json("ok");
+        res.cookie("token", token).json({
+          id: userDoc._id,
+          username,
+        });
       });
     } else {
       res.status(400).json("Incorrect credentials");
@@ -62,6 +69,27 @@ app.get("/profile", (req, res) => {
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json("ok");
 });
+
+app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
+  const { originalname, path } = req.file;
+  const parts = originalname.split(".");
+  const ext = parts[parts.length - 1];
+  const newPath = path + "." + ext;
+  fs.renameSync(path, newPath);
+  const { title, summary, content } = req.body;
+  try {
+    const postDoc = await Post.create({
+      title,
+      summary,
+      content,
+      cover: newPath,
+    });
+    res.json(postDoc);
+  } catch (e) {
+    res.status(400).json(e);
+  }
+});
+
 app.listen(4000);
 
 //mongodb+srv://binayakway:Qyr9dUbJUPd4QIkv@cluster0.nfuthdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
