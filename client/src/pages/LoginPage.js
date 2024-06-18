@@ -9,6 +9,8 @@ export default function LoginPage() {
   const { setUserInfo } = useContext(UserContext);
   async function login(event) {
     event.preventDefault();
+    console.log("IN LOGIN ", username, password);
+
     const response = await fetch("http://localhost:4000/login", {
       method: "POST",
       body: JSON.stringify({ username, password }),

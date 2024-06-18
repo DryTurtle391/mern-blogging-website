@@ -17,9 +17,10 @@ const secret = "sfaVJVJHvbkhjhjkhv";
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(cookieParser());
+app.use("/uploads", express.static(__dirname + "/uploads"));
 
 mongoose.connect(
-  "mongodb+srv://binayakway:Qyr9dUbJUPd4QIkv@cluster0.nfuthdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+  "mongodb+srv://binayakway:HOH5ZpJR8tbLsfbx@cluster0.nfuthdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 );
 
 app.post("/register", async (req, res) => {
@@ -37,8 +38,12 @@ app.post("/register", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
+  console.log("IN API ", username, password);
+
   try {
     const userDoc = await User.findOne({ username });
+    console.log("IN API ", username, password);
+
     const passOk = bcrypt.compareSync(password, userDoc.password);
 
     if (passOk) {
@@ -70,26 +75,41 @@ app.post("/logout", (req, res) => {
   res.cookie("token", "").json("ok");
 });
 
-app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
+app.post("/post", uploadMiddleware.single("file"), (req, res) => {
   const { originalname, path } = req.file;
   const parts = originalname.split(".");
   const ext = parts[parts.length - 1];
   const newPath = path + "." + ext;
-  fs.renameSync(path, newPath);
   const { title, summary, content } = req.body;
-  try {
-    const postDoc = await Post.create({
-      title,
-      summary,
-      content,
-      cover: newPath,
+  const { token } = req.cookies;
+  jwt.verify(token, secret, {}, async (error, info) => {
+    if (error) throw error;
+    try {
+      fs.renameSync(path, newPath);
+      const postDoc = await Post.create({
+        title,
+        summary,
+        content,
+        cover: newPath,
+        author: info.id,
+      });
+      res.json(postDoc);
+    } catch (e) {
+      res.status(400).json(e);
+    }
+  });
+});
+
+app.get("/post", (req, res) => {
+  Post.find()
+    .populate("author", ["username"])
+    .sort({ createdAt: -1 })
+    .limit(20)
+    .then((posts) => {
+      res.json(posts);
     });
-    res.json(postDoc);
-  } catch (e) {
-    res.status(400).json(e);
-  }
 });
 
 app.listen(4000);
 
-//mongodb+srv://binayakway:Qyr9dUbJUPd4QIkv@cluster0.nfuthdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+//mongodb+srv://binayakway:HOH5ZpJR8tbLsfbx@cluster0.nfuthdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
