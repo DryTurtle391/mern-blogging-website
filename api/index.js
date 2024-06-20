@@ -110,6 +110,12 @@ app.get("/post", (req, res) => {
     });
 });
 
+app.get("/post/:id", async (req, res) => {
+  const { id } = req.params;
+  const postDoc = await Post.findById(id).populate("author", ["username"]);
+  res.json(postDoc);
+});
+
 app.listen(4000);
 
 //mongodb+srv://binayakway:HOH5ZpJR8tbLsfbx@cluster0.nfuthdr.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0

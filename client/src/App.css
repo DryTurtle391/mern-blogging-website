@@ -12,7 +12,7 @@ img {
 
 main {
   padding: 10px;
-  max-width: 650px;
+  max-width: 960px;
   margin: 0 auto;
 }
 
@@ -40,9 +40,15 @@ header a.logo {
 
 div.post {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 10px;
   margin-bottom: 30px;
+}
+
+@media screen and (min-width: 768px) {
+  div.post {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
 }
 
 div.post div.image {
@@ -53,6 +59,11 @@ div.post div.image {
 div.post div.text h2 {
   margin: 0;
   font-size: 1.4rem;
+}
+
+div.post div.text a {
+  text-decoration: none;
+  color: inherit;
 }
 
 div.post p.info {
@@ -102,4 +113,56 @@ form.login h1,
 form.register h1 {
   font-size: 20px;
   text-align: center;
+}
+
+div.post-page div.image {
+  max-height: 200px;
+  overflow: hidden;
+  display: flex;
+}
+
+div.post-page div.image img {
+  object-fit: cover;
+  object-position: center center;
+}
+
+div.post-page h1 {
+  text-align: center;
+  margin-bottom: 5px;
+}
+
+div.post-page div.author {
+  text-align: center;
+  margin-bottom: 10px;
+  font-weight: bold;
+  font-size: 0.7rem;
+  display: block;
+  color: #444;
+}
+
+div.post-page time {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #444;
+  display: block;
+}
+
+div.post-page div.edit-row {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+div.post-page div.edit-row a.edit-btn {
+  background-color: #707070;
+  color: #d5d5d5;
+  border-radius: 6px;
+  padding: 4px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+div.post-page div.edit-row a svg {
+  height: 18px;
 }
