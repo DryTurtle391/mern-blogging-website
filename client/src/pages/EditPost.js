@@ -1,52 +1,37 @@
-import { useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
-import { Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Navigate, useParams } from "react-router-dom";
+import Editor from "../Editor";
 
-const modules = {
-  toolbar: [
-    [{ header: [1, 2, false] }],
-    ["bold", "italic", "underline", "strike", "blockquote"],
-    [
-      { list: "ordered" },
-      { list: "bullet" },
-      { indent: "-1" },
-      { indent: "+1" },
-    ],
-    ["link", "image"],
-    ["clean"],
-  ],
-};
-
-const formats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "blockquote",
-  "list",
-  "bullet",
-  "indent",
-  "link",
-  "image",
-];
 export default function EditPost() {
+  const { id } = useParams();
   const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [content, setContent] = useState("");
   const [files, setFile] = useState("");
   const [redirect, setRedirect] = useState(false);
 
-  async function createNewPost(event) {
+  useEffect(() => {
+    fetch(`${process.env.REACT_APP_API_URL}/post/` + id).then((response) => {
+      response.json().then((postInfo) => {
+        setTitle(postInfo.title);
+        setContent(postInfo.content);
+        setSummary(postInfo.summary);
+      });
+    });
+  }, []);
+
+  async function updatePost(event) {
+    event.preventDefault();
     const data = new FormData();
     data.set("title", title);
     data.set("summary", summary);
     data.set("content", content);
-    data.set("file", files[0]);
-    event.preventDefault();
-    const response = await fetch("http://localhost:4000/post", {
-      method: "POST",
+    data.set("id", id);
+    if (files?.[0]) {
+      data.set("file", files[0]);
+    }
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/post`, {
+      method: "PUT",
       body: data,
       credentials: "include",
     });
@@ -57,11 +42,11 @@ export default function EditPost() {
   }
 
   if (redirect) {
-    return <Navigate to="/" />;
+    return <Navigate to={"/post/" + id} />;
   }
 
   return (
-    <form action="" onSubmit={createNewPost}>
+    <form action="" onSubmit={updatePost}>
       <input
         type="title"
         placeholder={"Title"}
@@ -75,13 +60,8 @@ export default function EditPost() {
         onChange={(event) => setSummary(event.target.value)}
       />
       <input type="file" onChange={(event) => setFile(event.target.files)} />
-      <ReactQuill
-        value={content}
-        onChange={(newValue) => setContent(newValue)}
-        modules={modules}
-        formats={formats}
-      />
-      <button style={{ marginTop: "5px" }}>Create Post</button>
+      <Editor onChange={setContent} value={content} />
+      <button style={{ marginTop: "5px" }}>Update Post</button>
     </form>
   );
 }

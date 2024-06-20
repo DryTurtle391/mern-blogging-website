@@ -9,7 +9,7 @@ export default function PostPage() {
   const { id } = useParams();
 
   useEffect(() => {
-    fetch(`http://localhost:4000/post/${id}`).then((response) => {
+    fetch(`${process.env.REACT_APP_API_URL}/post/${id}`).then((response) => {
       response.json().then((postInfo) => {
         setPostInfo(postInfo);
       });
@@ -27,7 +27,7 @@ export default function PostPage() {
       <div className="author">by @{postInfo.author.username}</div>
       {userInfo.id === postInfo.author._id && (
         <div className="edit-row">
-          <Link to={`/edit/${postInfo.author._id}`} className="edit-btn">
+          <Link to={`/edit/${postInfo._id}`} className="edit-btn">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -47,7 +47,7 @@ export default function PostPage() {
         </div>
       )}
       <div className="image">
-        <img src={`http://localhost:4000/${postInfo.cover}`} />
+        <img src={`${process.env.REACT_APP_API_URL}/${postInfo.cover}`} />
       </div>
 
       <div dangerouslySetInnerHTML={{ __html: postInfo.content }} />
